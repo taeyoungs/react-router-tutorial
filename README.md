@@ -67,3 +67,8 @@
 ### useActionData
 
 `action`이 반환한 값을 사용할 수 있게 하는 훅
+
+## Creating Contacts
+
+- **HTML** `form` 태그를 `Form` 컴포넌트로 변경하면 앞서 언급했듯이 브라우저가 서버로 요청을 보내는 대신 `Route`의 `action`으로 해당 요청을 보낸다.
+- 웹 시멘틱에서 **POST** 요청은 주로 어떠한 데이터를 변경하는 것을 의미한다. 컨벤션에 따라 **React Router**는 이를 힌트로 삼아 `action`이 완료된 후에 페이지의 데이터를 자동으로 `revalidate` 할 것이다. 이 말인 즉슨 모든 `useLoaderData` 훅이 재호출되어 자동으로 업데이트된 데이터를 이용하여 **UI**를 동기화한다는 말이 된다.
