@@ -45,3 +45,25 @@
 ### `useRouteLoaderData`
 
 페이지 내에 활성화되어 있는 Route의 `loader` 함수가 반환한 데이터를 가져올 때 사용할 수 있는 훅
+
+## Data Writes + HTML Forms
+
+- 일부 웹 개발자들에게는 생소할 수도 있지만 **HTML** `form`은 `link`를 클릭하는 것과 같이 브라우저에 네비게이션을 일으킨다. `link`와 `form`의 차이점은 `link`는 **URL**만을 바꾸지만 `form`은 `request method`(**GET** vs **POST**)와 `request body`(**POST** `form` 데이터)도 바꿀 수 있다.
+- 클라이언트 사이드 라우팅이 없다면 브라우저는 `form` 데이터를 직렬화하여 **POST** 요청의 `body`에 담아 서버에게로 보내고 `URLSearchParams`의 경우 **GET** 요청에 **Query String Parameter**에 담아 보낸다. `React Router`도 동일한 작업을 한다. 단지 서버에게 요청을 보내는 대신 클라이언트 사이드 라우팅을 사용하고 `form` 데이터나 `URLSearchParams`를 `Route` 컴포넌트의 `action` 함수에게로 보낸다.
+
+### `action`
+
+> `createBrowserRouter`를 사용해야만 `action`을 사용할 수 있다.
+
+`Route`의 `action`은 `loader`가 하는 `읽기`(reads)의 `쓰기`(wrties) 버전이다.  
+`action`은 비동기 **UI**와 `revalidation`의 복잡성은 제거하는 반면 간단한 **HTML**과 **HTTP** 시멘틱으로 애플라케이션이 데이터 `mutation`을 수행하는 방법을 제공한다. 이는 우리에게 현대의 **SPA**의 동작 및 **UX** 기능과 함께 브라우저가 비동기와 `revalidation`을 처리하는 **HTTP** + **HTML**의 `mental model`을 제공한다.
+
+- `params`
+  - 동적 세부 경로(`dynamic segment`)에 대한 값이 담긴 매개변수
+- `request`
+  - `Fetch Request` 인스턴스가 담긴 매개변수
+  - 예를 들어, `a` 태그를 사용하는 경우 해당 링크를 클릭하는 순간 브라우저가 경로를 가지고 서버에 요청을 만들어 낸다. **React Router**를 사용하고 있고 `Link` 컴포넌트를 사용 중이라면 브라우저가 만들어낸 요청 인스턴스를 서버에 보내는 대신 **React Router**가 해당 인스턴스를 `loader`에게 보내게 만든다.
+
+### useActionData
+
+`action`이 반환한 값을 사용할 수 있게 하는 훅
