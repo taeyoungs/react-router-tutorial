@@ -18,6 +18,8 @@
   - [Updating Data](#updating-data)
   - [Updating Contacts with FormData](#updating-contacts-with-formdata)
   - [Mutation Discussion](#mutation-discussion)
+  - [Active Link Styling](#active-link-styling)
+    - [NavLink](#navlink)
 
 ## Handling Not Found Errors
 
@@ -115,3 +117,13 @@
 - 클라이언트 사이드 라우팅이 없다면 서버에게 POST 요청을 보낸 후에 `redirect` 되고 새로운 페이지는 최신 데이터를 패칭한 후 새로 렌더링하게 될 것이다.
   - 이전에 배웠듯이 **React Router**는 `action` 이후에 자동으로 데이터를 `revalidate` 한다.
   - 그렇기에 **Sidebar**의 데이터들도 업데이트가 된다.
+
+## Active Link Styling
+
+### NavLink
+
+- `Link` 컴포넌트와 동일하지만 현재 경로와 일치하는지 여부를 추가적으로 알 수 있는 컴포넌트다.
+  - 현재 선택된 링크가 무엇인지 사용자에게 알리고자 할 때 그리고 **Screen Reader**에게 정보를 전달하고자 할 때도 유용하다.
+- `NavLink`가 활성화되어 있는 상태라면 기본적으로 `active` 클래스가 추가된다.
+- 이전 버전과 다른 점이 하나 있다면 `NavLinkProps`를 없애고 `style`과 `classname` 속성에 콜백 함수를 전달할 수 있게끔 만들었다.
+  - 해당 콜백 함수의 매개변수에는 `isActive`가 존재하기 때문에 이를 가지고 추가적인 스타일링이나 클래스 네임 부여가 가능하다.
