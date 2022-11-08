@@ -16,6 +16,7 @@
   - [Creating Contacts](#creating-contacts)
   - [URL Parmas in Loaders](#url-parmas-in-loaders)
   - [Updating Data](#updating-data)
+  - [Updaing Contacts with FormData](#updaing-contacts-with-formdata)
 
 ## Handling Not Found Errors
 
@@ -97,3 +98,7 @@
 - 새로운 데이터를 생성할 때와 동일하게 `Form` 컴포넌트를 이용하여 데이터를 업데이트할 수도 있다.
 - 예제에서는 `contactLoader`를 `contacts/:contactId/edit`에도 전달하고 있지만 일반적으로 `loader`를 공유하는 일은 거의 없다. 이는 단지 튜토리얼이기 때문이고 실무에서는 웬만하면 `Route` 마다 고유의 `loader`가 존재할 것이다.
 - 세부 경로로 진입하면서 `Root` 컴포넌트 내 `Outlet` 컴포넌트에 전달되는 컴포넌트가 변경된다. 즉, 경로와 일치하는 `element`가 `Outlet`에서 렌더링된다.
+
+## Updaing Contacts with FormData
+
+- `route`에 `action`을 연결하면 `Form` 컴포넌트에서 발생한 **POST** 요청이 `action`으로 전달될 것이고 데이터는 자동으로 `revalidate` 될 것이다.
