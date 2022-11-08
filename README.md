@@ -20,6 +20,11 @@
   - [Mutation Discussion](#mutation-discussion)
   - [Active Link Styling](#active-link-styling)
     - [NavLink](#navlink)
+  - [Global Pending UI](#global-pending-ui)
+    - [`useNavigation`](#usenavigation)
+    - [`navigation.state`](#navigationstate)
+    - [`navaigation.formData`](#navaigationformdata)
+    - [`navigation.location`](#navigationlocation)
 
 ## Handling Not Found Errors
 
@@ -127,3 +132,71 @@
 - `NavLink`가 활성화되어 있는 상태라면 기본적으로 `active` 클래스가 추가된다.
 - 이전 버전과 다른 점이 하나 있다면 `NavLinkProps`를 없애고 `style`과 `classname` 속성에 콜백 함수를 전달할 수 있게끔 만들었다.
   - 해당 콜백 함수의 매개변수에는 `isActive`가 존재하기 때문에 이를 가지고 추가적인 스타일링이나 클래스 네임 부여가 가능하다.
+
+## Global Pending UI
+
+- **React Router**는 페이지를 이동할 때 다음 페이지가 로딩 상태인 동안 이전 페이지(이동하기 전 페이지)를 보여준다. 이는 사용자로 하여금 페이지가 아무런 동작도 하지 않고 멈춰버렸다고 생각하게끔 만들 수도 있다.
+  - 따라서, **React Router**는 이러한 상황을 대처하는 데 필요한 다양한 정보들을 `useNavigation` 훅으로 제공한다.
+- **data model**이 클라이언트 사이드 캐시를 사용하고 있기 때문에 두 번째 방문 때부터는 로딩 상태가 보이지 않는다.
+
+### `useNavigation`
+
+`useNavigation`은 페이지 이동할 때 사용하는 **navigation indicator**(ex. 로딩 스피너) 그리고 데이터 `mutation`에 관한 낙관적 **UI**를 빌드하기 위한 모든 정보를 제공한다.
+
+- **Global loading indicators**
+- `mutation`이 수행하는 동안 `form` 비활성화
+- submit 버튼에 로딩 스피너와 같은 **busy indicator** 추가
+- 서버에서 데이터를 생성하는 동안 낙관적 업데이트를 통한 데이터 표시
+- 서버에서 데이터가 업데이트 되는 동안 낙관적 업데이트를 통한 데이터 표시
+
+`useNavigation`이 반환하는 객체(`navigation` 식별자에 담겨 있다고 가정)에는 다음과 같은 정보들이 담겨있다.
+
+### `navigation.state`
+
+- `idle`: `Pending` 상태 (네비게이션 발생 X)
+- `submitting`: **POST**, **PUT**, **PATCH**, **DELETE** 중 하나로 `form`의 ₩이 발생하여 `route`의 `action`이 호출된 상태
+- `loading`: 페이지 이동(네비게이션)이 발생하여 `loader`가 호출된 상태
+
+일반적인 네비게이션이나 `form`의 `submit`이 **GET** 요청으로 발생했다면 `navigation.state`는 다음과 같은 흐름을 가진다.
+
+```
+idle -> loading -> idle
+```
+
+**POST**, **PUT**, **PATCH**, **DELETE** 중 하나로 `form`의 `submit`이 발생한 상태라면 `navigation.state`는 다음과 같은 흐름을 가진다.
+
+```
+idle -> submitting -> loading -> idle
+```
+
+`useNavigation`이 제공하는 정보들을 조합하면 다음과 같은 고차원의 상태 체크가 가능하다.
+
+```javascript
+// Is this just a normal load?
+let isNormalLoad = navigation.state === 'loading' && navigation.formData == null;
+
+// Are we reloading after an action?
+let isReloading =
+  navigation.state === 'loading' &&
+  navigation.formData != null &&
+  navigation.formAction === navigation.location.pathname;
+
+// Are we redirecting after an action?
+let isRedirecting =
+  navigation.state === 'loading' &&
+  navigation.formData != null &&
+  navigation.formAction !== navigation.location.pathname;
+```
+
+### `navaigation.formData`
+
+- `<Form>` 또는 `useSubmit`에서 시작된 **POST**, **PUT**, **PATCH**, **DELETE** 요청이라면 해당 요청의 `body`에 담긴 데이터가 `navaigation.formData`에 담긴다.
+- 이 데이터는 주로 `action` 발생 후 낙관적 업데이트를 통한 **UI** 변경에 사용된다.
+
+### `navigation.location`
+
+이동할 경로에 대한 정보가 담겨 있는 속성
+
+`form`이 링크가 가리키고 있는 **URL**로 `submit` 되는 경우 링크는 `pending`로 표시되지 않는다. 왜냐하면 `navigation.state`가 `loading` 상태일 때만 링크를 `pending` 상태로 만드는 작업을 수행하기 때문이다. 따라서, `navigation.state`가 `submitting`이다가 action이 완료되면 링크가 `pedning` 상태가 된다.
+
+> Note that this link will not appear "pending" if a form is being submitted to the URL the link points to, because we only do this for "loading" states. The form will contain the pending UI for when the state is "submitting", once the action is complete, then the link will go pending.
