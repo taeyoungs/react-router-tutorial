@@ -28,6 +28,7 @@
   - [Deleting Records](#deleting-records)
   - [Contextual Errors](#contextual-errors)
   - [Index Routes](#index-routes)
+  - [Cancel Button](#cancel-button)
 
 ## Handling Not Found Errors
 
@@ -227,3 +228,7 @@ let isRedirecting =
 
 - `{ path: '' }` 대신 `{ index: true }` 속성을 전달하면 **Router**에게 사용자가 현재 머무르고 있는 경로가 부모 `route`의 경로와 정확히 일치할 경우 `{ index: true }`가 전달되어 있는 컴포넌트를 `Outlet`에 전달하도록 만들 수 있다.
   - `{ index: true }`인 경우는 자식 `route` 중 어느 `route`도 부모 `route`와 일치하지 않는 상황이기 때문에 `{ index: true }`가 표시된 컴포넌트만 `Outlet`에 전달된다.
+
+## Cancel Button
+
+- `<button type="button">`은 겉보기에는 중복되어 보이지만 해당 버튼이 `form`을 `submit` 하지 못하도록 하는 HTML 방식이다.
