@@ -15,6 +15,7 @@
     - [useActionData](#useactiondata)
   - [Creating Contacts](#creating-contacts)
   - [URL Parmas in Loaders](#url-parmas-in-loaders)
+  - [Updating Data](#updating-data)
 
 ## Handling Not Found Errors
 
@@ -90,3 +91,9 @@
 `Route`의 `path` 속성에 준 `contacts/:contactId` 값에서 `:contactId`는 **URL** 세그먼트다. `:`을 통해서 해당 세부 경로를 **dynamic segment**로 변환하며 이를 `URL Parmas`, 짧게는 `params`라고 부른다.
 
 - `loader`에게 전달하는 콜백 함수의 매개변수를 통해서 해당 `Route`에 전달되는 `URL Params`에 접근할 수 있다.
+
+## Updating Data
+
+- 새로운 데이터를 생성할 때와 동일하게 `Form` 컴포넌트를 이용하여 데이터를 업데이트할 수도 있다.
+- 예제에서는 `contactLoader`를 `contacts/:contactId/edit`에도 전달하고 있지만 일반적으로 `loader`를 공유하는 일은 거의 없다. 이는 단지 튜토리얼이기 때문이고 실무에서는 웬만하면 `Route` 마다 고유의 `loader`가 존재할 것이다.
+- 세부 경로로 진입하면서 `Root` 컴포넌트 내 `Outlet` 컴포넌트에 전달되는 컴포넌트가 변경된다. 즉, 경로와 일치하는 `element`가 `Outlet`에서 렌더링된다.
