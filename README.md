@@ -26,6 +26,7 @@
     - [`navaigation.formData`](#navaigationformdata)
     - [`navigation.location`](#navigationlocation)
   - [Deleting Records](#deleting-records)
+  - [Contextual Errors](#contextual-errors)
 
 ## Handling Not Found Errors
 
@@ -216,3 +217,7 @@ let isRedirecting =
   2. 막았던 요청은 `<Form>`이 가진 속성과 일치하는 경로로 보내진다.
   3. `redirect` 되고 나서 **React Router**는 최신 데이터를 가져오기 위하여(이를 `revalidation`이라 한다) 페이지의 데이터에 대한 모든 `loader`를 다시 호출한다.
   4. `useLoaderData`는 새로운 값을 반환하고 컴포넌트 리렌더링을 발생시킨다.
+
+## Contextual Errors
+
+- `action` 또는 `loader`에서 발생한 에러는 가장 가까운 `errorElement`까지 버블링된다.
