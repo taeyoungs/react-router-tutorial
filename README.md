@@ -16,7 +16,8 @@
   - [Creating Contacts](#creating-contacts)
   - [URL Parmas in Loaders](#url-parmas-in-loaders)
   - [Updating Data](#updating-data)
-  - [Updaing Contacts with FormData](#updaing-contacts-with-formdata)
+  - [Updating Contacts with FormData](#updating-contacts-with-formdata)
+  - [Mutation Discussion](#mutation-discussion)
 
 ## Handling Not Found Errors
 
@@ -99,6 +100,18 @@
 - 예제에서는 `contactLoader`를 `contacts/:contactId/edit`에도 전달하고 있지만 일반적으로 `loader`를 공유하는 일은 거의 없다. 이는 단지 튜토리얼이기 때문이고 실무에서는 웬만하면 `Route` 마다 고유의 `loader`가 존재할 것이다.
 - 세부 경로로 진입하면서 `Root` 컴포넌트 내 `Outlet` 컴포넌트에 전달되는 컴포넌트가 변경된다. 즉, 경로와 일치하는 `element`가 `Outlet`에서 렌더링된다.
 
-## Updaing Contacts with FormData
+## Updating Contacts with FormData
 
 - `route`에 `action`을 연결하면 `Form` 컴포넌트에서 발생한 **POST** 요청이 `action`으로 전달될 것이고 데이터는 자동으로 `revalidate` 될 것이다.
+
+## Mutation Discussion
+
+- **JavaScript** 없이 `form`을 `submit`하면 브라우저는 `FormData` 생성할 것이고 이를 서버에 보낼 요청의 `body`에 집이 넣는다.
+- 이전에도 언급했듯이 **React Router**는 이러한 서버에게로 가는 요청을 막고 `FormData`를 포함하고 있는 이 요청을 `action`에게로 보낸다.
+  - `FormData`의 각 필드는 `formData.get(name)`를 사용하여 접근이 가능하다. 여기서 `name`은 `input`이 갖고 있던 `name` 속성이다.
+  - 여기서 `request`, `request.formData`, `Object.fromEntries`는 **React Router**가 제공하는 것이 아니라 웹에서 제공하고 있는 것들이다.
+- `loader`와 `action`은 둘 다 `Response`를 반환할 수 있다. `Response`를 반환하는 상황이 이상한 게 아닌 것이 이미 `loader`와 `action`은 **React Router**를 통해 `Request`를 받았다.
+  - `redirect`를 통해서 애플리케이션에게 경로가 바뀌었다는 것을 쉽게 알려줄 수 있다.
+- 클라이언트 사이드 라우팅이 없다면 서버에게 POST 요청을 보낸 후에 `redirect` 되고 새로운 페이지는 최신 데이터를 패칭한 후 새로 렌더링하게 될 것이다.
+  - 이전에 배웠듯이 **React Router**는 `action` 이후에 자동으로 데이터를 `revalidate` 한다.
+  - 그렇기에 **Sidebar**의 데이터들도 업데이트가 된다.
