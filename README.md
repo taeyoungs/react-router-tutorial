@@ -25,6 +25,7 @@
     - [`navigation.state`](#navigationstate)
     - [`navaigation.formData`](#navaigationformdata)
     - [`navigation.location`](#navigationlocation)
+  - [Deleting Records](#deleting-records)
 
 ## Handling Not Found Errors
 
@@ -200,3 +201,18 @@ let isRedirecting =
 `form`이 링크가 가리키고 있는 **URL**로 `submit` 되는 경우 링크는 `pending`로 표시되지 않는다. 왜냐하면 `navigation.state`가 `loading` 상태일 때만 링크를 `pending` 상태로 만드는 작업을 수행하기 때문이다. 따라서, `navigation.state`가 `submitting`이다가 action이 완료되면 링크가 `pedning` 상태가 된다.
 
 > Note that this link will not appear "pending" if a form is being submitted to the URL the link points to, because we only do this for "loading" states. The form will contain the pending UI for when the state is "submitting", once the action is complete, then the link will go pending.
+
+## Deleting Records
+
+- `<Link to>`, `<Form action>`에다가 전체 경로가 아닌 단순히 value 값만 집어 넣는다면 이는 상대 경로로써 동작한다.
+  - 예를 들어, 현재 위치가 `contact/:contactId`이고 `<Form action="destory">`라면 `form`은 `contact/:contactId/destory`으로 `submit` 된다.
+- 위와 같은 예일 때 삭제 버튼이 동작하게 만들기 위해서 다음과 같은 요소들이 필요하다.
+  - 새로운 `route`
+  - `route`에 연결된 `action`
+  - `src/contacts.js`의 `deleteContact`
+- 삭제 버튼을 누를 경우 다음과 같은 흐름으로 진행된다.
+
+  1. `<Form>`은 브라우저가 기본적으로 **POST** 요청을 만들어서 서버에게 보내는 행동을 막는다.
+  2. 막았던 요청은 `<Form>`이 가진 속성과 일치하는 경로로 보내진다.
+  3. `redirect` 되고 나서 **React Router**는 최신 데이터를 가져오기 위하여(이를 `revalidation`이라 한다) 페이지의 데이터에 대한 모든 `loader`를 다시 호출한다.
+  4. `useLoaderData`는 새로운 값을 반환하고 컴포넌트 리렌더링을 발생시킨다.
