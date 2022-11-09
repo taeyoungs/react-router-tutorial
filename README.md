@@ -33,6 +33,7 @@
   - [Synchronizing URLs to Form State](#synchronizing-urls-to-form-state)
   - [Submitting Forms `onChange`](#submitting-forms-onchange)
     - [`useSubmit`](#usesubmit)
+  - [Adding Search Spinner](#adding-search-spinner)
 
 ## Handling Not Found Errors
 
@@ -269,3 +270,7 @@ let isRedirecting =
 - 두 번째 인수는 form 태그의 속성들이다.
   - `action`, ex. `/logout`
   - `method`, ex. `post`, `get`
+
+## Adding Search Spinner
+
+- `useNavigation`으로부터 반환되는 객체는 `loader`가 호출되고, 즉 `navigation.state`가 `loading`일 때는 의미 있는 데이터(`undefined가` 아님)를 반환해주고 `loader`의 실행이 완료되어 `idle`로 전환됐을 때는 `navigation.state`를 제외한 나머지 값들은 `undefined`로 처리된다.
