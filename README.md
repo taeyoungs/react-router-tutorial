@@ -31,6 +31,8 @@
   - [Cancel Button](#cancel-button)
   - [GET Submissions with Client Side Rendering](#get-submissions-with-client-side-rendering)
   - [Synchronizing URLs to Form State](#synchronizing-urls-to-form-state)
+  - [Submitting Forms `onChange`](#submitting-forms-onchange)
+    - [`useSubmit`](#usesubmit)
 
 ## Handling Not Found Errors
 
@@ -255,3 +257,15 @@ let isRedirecting =
    - `loader`에서 `contact` 뿐만 아니라 검색했던 값(`q`)까지 같이 반환해준다.
    - `useLoaderData`로 검색했던 값을 얻어내서 이를 `form` 내 `input` 태그의 `defaultValue`에 전달한다.
    - 이제 페이지를 새로고침해도 `URLSearchParams`에 값은 존재하기 때문에 이를 이용해 검색했던 값을 `input` 태그에 유지하는 것이 가능해진다.
+
+## Submitting Forms `onChange`
+
+### `useSubmit`
+
+`<Form>`의 명령형 버전으로 프로그래머가 사용자 대신 `form`을 `submit` 할 수 있도록 만들어 준다.
+
+- 첫 번째 인수는 form, form 내에 input 요소 그리고 formData 등 다양한 값들을 넘길 수 있다.
+  - null도 가능하다. ex. ` submit(null, { method: "post", action: "/logout" });`
+- 두 번째 인수는 form 태그의 속성들이다.
+  - `action`, ex. `/logout`
+  - `method`, ex. `post`, `get`
