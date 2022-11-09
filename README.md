@@ -29,6 +29,7 @@
   - [Contextual Errors](#contextual-errors)
   - [Index Routes](#index-routes)
   - [Cancel Button](#cancel-button)
+  - [GET Submissions with Client Side Rendering](#get-submissions-with-client-side-rendering)
 
 ## Handling Not Found Errors
 
@@ -217,7 +218,7 @@ let isRedirecting =
 
   1. `<Form>`은 브라우저가 기본적으로 **POST** 요청을 만들어서 서버에게 보내는 행동을 막는다.
   2. 막았던 요청은 `<Form>`이 가진 속성과 일치하는 경로로 보내진다.
-  3. `redirect` 되고 나서 **React Router**는 최신 데이터를 가져오기 위하여(이를 `revalidation`이라 한다) 페이지의 데이터에 대한 모든 `loader`를 다시 호출한다.
+  3. `redirect` 되고 나서 **React Router**는 최신 데이터를 가져오기 위하여(이를 `revalidation`이라 한다) 페이지의 데이터에 대한 모든 `loader`를 다시 호출한다.
   4. `useLoaderData`는 새로운 값을 반환하고 컴포넌트 리렌더링을 발생시킨다.
 
 ## Contextual Errors
@@ -232,3 +233,10 @@ let isRedirecting =
 ## Cancel Button
 
 - `<button type="button">`은 겉보기에는 중복되어 보이지만 해당 버튼이 `form`을 `submit` 하지 못하도록 하는 HTML 방식이다.
+
+## GET Submissions with Client Side Rendering
+
+- **JavaScript**가 없다면 `form`에서 **GET** 요청을 발생시켰을 때 `Request` `body`에 `formData`를 담는 **POST** 요청과는 달리 **GET** `Request`의 `URLSearchParams`에 `formData`가 `key=value` 형태로 담긴다.
+  - ex. `http://127.0.0.1:5173/?q=ryan`
+- 여기서 만약 **React Router**를 사용한다고 하면 서버에게 **GET** 요청을 보내는 대신 해당 `Route`의 `loader`가 호출된다.
+  - `action`이 아니고 `loader`가 호출되는 이유는 **POST** 요청이 아닌 **GET** 요청이기 때문이다. **GET** 요청은 `Link`를 클릭하는 것과 동일하다.
