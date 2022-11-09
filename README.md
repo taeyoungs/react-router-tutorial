@@ -30,6 +30,7 @@
   - [Index Routes](#index-routes)
   - [Cancel Button](#cancel-button)
   - [GET Submissions with Client Side Rendering](#get-submissions-with-client-side-rendering)
+  - [Synchronizing URLs to Form State](#synchronizing-urls-to-form-state)
 
 ## Handling Not Found Errors
 
@@ -240,3 +241,17 @@ let isRedirecting =
   - ex. `http://127.0.0.1:5173/?q=ryan`
 - 여기서 만약 **React Router**를 사용한다고 하면 서버에게 **GET** 요청을 보내는 대신 해당 `Route`의 `loader`가 호출된다.
   - `action`이 아니고 `loader`가 호출되는 이유는 **POST** 요청이 아닌 **GET** 요청이기 때문이다. **GET** 요청은 `Link`를 클릭하는 것과 동일하다.
+
+## Synchronizing URLs to Form State
+
+현재 다음과 같은 **UX** 이슈가 있다.
+
+1. 브라우저의 뒤로 가기 버튼을 눌렀을 때 검색 목록이 더 이상 보이지 않는 상황 임에도 불구하고 `form` 내 `input` 태그에 입력했었던 값이 계속해서 표시되는 이슈
+   - `useEffect`를 활용하여 검색했던 값(`q`)가 변할 때 `input` 태그의 값이 다시 설정되도록 만들면 된다.
+   - **React** `State`를 통한 `controlled component`를 사용하고 싶다는 생각이 들 수도 있다.
+     - 구현은 가능하지만 동일한 동작임에도 불구하고 코드는 더 복잡해진다.
+     - **URL** 자체를 통제할 순 없기에 `controlled component`를 사용하고 싶다면 더 많은 동기화 포인트가 필요하다.
+2. 검색을 마친 후 새로고침을 눌렀을 때 `form` 내 `input` 태그에 검색했던 값이 사라지는 이슈
+   - `loader`에서 `contact` 뿐만 아니라 검색했던 값(`q`)까지 같이 반환해준다.
+   - `useLoaderData`로 검색했던 값을 얻어내서 이를 `form` 내 `input` 태그의 `defaultValue`에 전달한다.
+   - 이제 페이지를 새로고침해도 `URLSearchParams`에 값은 존재하기 때문에 이를 이용해 검색했던 값을 `input` 태그에 유지하는 것이 가능해진다.
