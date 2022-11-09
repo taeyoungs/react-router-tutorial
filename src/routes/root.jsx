@@ -20,6 +20,8 @@ export default function Root() {
   const navigation = useNavigation();
   const submit = useSubmit();
 
+  const searching = navigation.location && new URLSearchParams(navigation.location.search).has('q');
+
   useEffect(() => {
     document.getElementById('q').value = q;
   }, [q]);
@@ -39,7 +41,7 @@ export default function Root() {
               defaultValue={q}
               onChange={(event) => submit(event.currentTarget.form)}
             />
-            <div id="search-spinner" aria-hidden hidden={true} />
+            <div id="search-spinner" aria-hidden hidden={!searching} />
             <div className="sr-only" arai-live="polite"></div>
           </Form>
           <Form method="post">
