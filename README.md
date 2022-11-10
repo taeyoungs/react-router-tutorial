@@ -46,6 +46,7 @@
     - [`fetcher.formData`](#fetcherformdata)
     - [`fetcher.formAction` & `fetcher.formMethod`](#fetcherformaction--fetcherformmethod)
     - [Index Query Param](#index-query-param)
+  - [Not Found Data](#not-found-data)
 
 ## Handling Not Found Errors
 
@@ -444,3 +445,26 @@ createBrowserRouter([
 ```
 
 위와 같이 경로는 같지만 중첩된 자식 `Route`를 구별하고 싶다면 `?index`를 **Query String Parameter**로 사용하면 된다.
+
+## Not Found Data
+
+데이터를 가져왔는데 해당 데이터가 없는 상황(`null`)이라면? `null`을 렌더링하려고 하는 상황에 발생한 에러는 가장 가까운 `errorElement`를 통해서 캐치되기 때문에 현재 코드 상에서는 최상단 `route`가 가지고 있는 `errorElement`에 의해서 에러가 처리된다.
+
+현재 상태로 놔둘 수도 있겠지만 에러 처리 방법을 더 상세화할 수도 있다.
+
+`loader`나 `action`에서 "데이터가 존재하지 않습니다"와 같은 예상 가능한 에러가 발생할 때마다 이에 맞춰 `throw` 할 수 있다. **call stack**을 끊고 이를 **React Router**가 캐치해서 특정 에러 경로가 대신 렌더링되게 할 수 있다. 이렇게 하면 `null`을 렌더링하려는 시도 자체를 하지 않아도 된다.
+
+```jsx
+export async function loader({ params }) {
+  const contact = await getContact(params.contactId);
+  if (!contact) {
+    throw new Response('', {
+      status: 404,
+      statusText: 'Not Found',
+    });
+  }
+  return contact;
+}
+```
+
+이렇게 하면 `null`을 렌더링하는 시도도 피할 수 있고 사용자에게 더 명확한 에러 사항을 명시해줄 수도 있다.
