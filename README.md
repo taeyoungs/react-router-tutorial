@@ -47,6 +47,8 @@
     - [`fetcher.formAction` & `fetcher.formMethod`](#fetcherformaction--fetcherformmethod)
     - [Index Query Param](#index-query-param)
   - [Not Found Data](#not-found-data)
+  - [Pathless Routes](#pathless-routes)
+  - [JSX Routes](#jsx-routes)
 
 ## Handling Not Found Errors
 
@@ -468,3 +470,55 @@ export async function loader({ params }) {
 ```
 
 이렇게 하면 `null`을 렌더링하는 시도도 피할 수 있고 사용자에게 더 명확한 에러 사항을 명시해줄 수도 있다.
+
+## Pathless Routes
+
+**children route**들에서 발생하는 에러를 핸들링하고 싶을 때 `errorElement`를 모든 **children route**에다가 일일히 집어 넣어 줄 수도 있겠지만 더 깔끔한 방법이 있다.
+`Route`는 `path` 속성이 없이도 사용이 가능하다. 이를 **pathless route**라고 부르며 **pathless route**로 기존 **children route**들을 감싸서 여기서 발생하는 에러들을 **pathless route**가 처리하도록 만든다.
+
+```jsx
+const router = createBrowserRouter([
+  {
+    // ...
+    children: [
+      {
+        errorElement: <ErrorPage />,
+        children: [
+          {
+            index: true,
+            element: <Index />,
+          },
+          {
+            path: 'contacts/:contactId',
+            element: <Contact />,
+            loader: contactLoader,
+            action: contactAction,
+          },
+          // ...
+        ],
+      },
+    ],
+  },
+]);
+```
+
+## JSX Routes
+
+지금까지 작성했던 방식과는 다르게 **JSX**를 통한 `Router` 생성도 가능하다. 기능의 차이는 없으며 코드를 작성하는 스타일의 차이만 있을 뿐이다.
+
+```jsx
+import { createRoutesFromElements, createBrowserRouter } from 'react-router-dom';
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path="/" element={<Root />} loader={rootLoader} action={rootAction} errorElement={<ErrorPage />}>
+      <Route errorElement={<ErrorPage />}>
+        <Route index element={<Index />} />
+        <Route path="contacts/:contactId" element={<Contact />} loader={contactLoader} action={contactAction} />
+        <Route path="contacts/:contactId/edit" element={<EditContact />} loader={contactLoader} action={editAction} />
+        <Route path="contacts/:contactId/destroy" action={destroyAction} />
+      </Route>
+    </Route>
+  )
+);
+```
