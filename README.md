@@ -34,6 +34,8 @@
   - [Submitting Forms `onChange`](#submitting-forms-onchange)
     - [`useSubmit`](#usesubmit)
   - [Adding Search Spinner](#adding-search-spinner)
+  - [Managing the History Stack](#managing-the-history-stack)
+    - [Use `replace` in `submit`](#use-replace-in-submit)
 
 ## Handling Not Found Errors
 
@@ -274,3 +276,40 @@ let isRedirecting =
 ## Adding Search Spinner
 
 - `useNavigation`으로부터 반환되는 객체는 `loader`가 호출되고, 즉 `navigation.state`가 `loading`일 때는 의미 있는 데이터(`undefined가` 아님)를 반환해주고 `loader`의 실행이 완료되어 `idle`로 전환됐을 때는 `navigation.state`를 제외한 나머지 값들은 `undefined`로 처리된다.
+
+## Managing the History Stack
+
+```jsx
+<input
+  id="q"
+  aria-label="Search contacts"
+  placeholder="Search"
+  type="search"
+  name="q"
+  defaultValue={q}
+  onChange={(event) => submit(event.currentTarget.form)}
+/>
+```
+
+위와 같이 코드를 작성하여 사용자가 검색을 할 수 있게 만들었을 때의 문제점은 글자를 1개 입력할 때마다 **history stack**이 쌓인다는 것이다. `abcd`를 검색하는데 **history stack**에 `a`, `ab`, `abc`, `abcd`와 같이 쌓여서 뒤로 가기를 누를 때마다 이를 거슬러 올라가는 건 사용자도 원하지 않을 것이다.
+
+### Use `replace` in `submit`
+
+따라서, 아래와 같이 `submit` 메서드에 `replace` 속성을 전달하여 **history stack**에 경로가 계속해서 쌓이는 대신 마지막에 쌓인 경로가 대체되는 방식으로 변경한다.
+
+```jsx
+<input
+  id="q"
+  aria-label="Search contacts"
+  placeholder="Search"
+  type="search"
+  name="q"
+  defaultValue={q}
+  onChange={(event) => {
+    const isFirstSearch = q === null;
+    submit(event.currentTarget.form, {
+      replace: !isFirstSearch,
+    });
+  }}
+/>
+```
