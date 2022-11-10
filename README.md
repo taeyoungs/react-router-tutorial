@@ -36,6 +36,16 @@
   - [Adding Search Spinner](#adding-search-spinner)
   - [Managing the History Stack](#managing-the-history-stack)
     - [Use `replace` in `submit`](#use-replace-in-submit)
+  - [Mutation Without Navigation](#mutation-without-navigation)
+    - [useFetcher](#usefetcher)
+    - [`fetcher.state`](#fetcherstate)
+    - [`fetcher.Form`](#fetcherform)
+    - [`fetcher.load()`](#fetcherload)
+    - [`fetcher.submit()`](#fetchersubmit)
+    - [`fetcher.data`](#fetcherdata)
+    - [`fetcher.formData`](#fetcherformdata)
+    - [`fetcher.formAction` & `fetcher.formMethod`](#fetcherformaction--fetcherformmethod)
+    - [Index Query Param](#index-query-param)
 
 ## Handling Not Found Errors
 
@@ -313,3 +323,124 @@ let isRedirecting =
   }}
 />
 ```
+
+## Mutation Without Navigation
+
+튜토리얼에서 지금까지 사용했던 `mutation`(데이터를 변경하는)은 `navigate`가 발생하는 `form` 사용하여 **history stack**에 새로운 `entry`를 생성했다. 이러한 사용자 플로우는 일반적인 플로우가 맞긴 하지만 `navigate`가 발생하는 것 없이도 데이터를 변경하는 플로우, 즉 `navigation` 없이 `mutation`을 수행하는 플로우도 일반적인 플로우 중 하나다.
+
+이러한 케이스들을 위해 `useFetcher` 훅을 제공한다. 이 훅은 `navigation` 발생 없이 `loader` 그리고 `action`과 소통할 수 있게 해준다.
+
+### useFetcher
+
+**HTML**/**HTTP**에서 데이터 `mutation`과 `load`(or `fetching`)는 `navigation`과 함께 모델링된다. 브라우저에서 `navigation`을 발생시키는 건 `<a href>`와 <form action> 태그이고 **React Router**에서 이 두 태그는 <Link>와 <Form>에 해당한다.
+
+하지만 때로는 `navigation`을 하지 않고 `loader`를 호출하고 싶고 URL을 변경하지 않고도 `action`을 호출하여 `revalidate`할 페이지의 최신 데이터를 가져오고 싶기도 하다. 아니면 동시에 여러 `mutation`을 수행하고 싶을 수도 있다.
+
+서버와의 많은 인터렉션에 `navigation` 이벤트는 적합하지 않다. `useFetcher` 훅을 사용하면 `navigation` 없이도 UI를 `loader`나 `action`에 연결할 수 있다.
+
+이 훅은 다음과 같은 상황에 유용하다.
+
+- fetch data not associated with UI routes (popovers, dynamic forms, etc.)
+- navigation 없이 action에 데이터를 submit하는 경우 (뉴스레터 회원 가입과 같은 공유 컴포넌트)
+- 리스트에서 동시다발적인 submission을 처리해야 하는 경우 (typical "todo app" list where you can click multiple buttons and all should be pending at the same time)
+- infinite scroll containers
+- 등등
+
+**Fetcher**엔 여러 가지 내장된 빌트인 동작들이 존재한다.
+
+- 데이터 패칭이 중단되면 자동으로 취소 처리 한다.
+  > Automatically handles cancellation on interruptions of the fetch
+- **POST**, **PUT**, **PATCH**, **DELETE로** `submit` 됐을 때 `action`이 제일 먼저 호출된다.
+  - `action`의 실행이 끝나면 페이지의 데이터가 `revalidate` 되어 발생할 수 있는 모든 `mutation`을 캡처하여 UI를 서버 상태와 자동으로 동기화한다.
+- 다수의 `fetcher`가 한번에 실행됐을 때는
+  - 완료되는 `fetcher` 마다 해당 `fetcher`의 최신 그리고 사용 가능한 데이터를 `commit`한다.
+  - 응답이 반환되는 순서에 상관없이 **stale load**가 최신 데이터를 덮어쓰지 않도록 한다.
+- `<Link>`나 `<Form>`을 통한 일반적인 `navigation`과 같이 가장 가까운 `errorElement`을 렌더링하여 캐치되지 않은 오류들을 처리한다.
+- `<Link>`나 `<Form>`을 통한 일반적인 `navigation`과 같이 `action` 이나 `loader`가 `redirect`를 반환하는 경우 애플리케이션은 `redirect` 된다.
+
+### `fetcher.state`
+
+- `idle`
+  - 패칭이 발생하지 않은 상태
+- `submitting`
+  - **POST**, **PUT**, **PATCH**, 또는 **DELETE**를 사용하여 `fetcher`가 `submission` 하기 위해 `action`을 호출한 상태
+- `loading`
+  - `fetcher`가 `fetcher.load`를 사용하여 `loader`를 호출한 상태
+  - 별도의 `submission` 후에 `revalidate` 된 상태
+  - `useRevalidator` 훅을 호출한 상태
+
+### `fetcher.Form`
+
+navigation을 발생시키지 않는 점만 제외하면 <Form>과 동일하다.
+
+```jsx
+function SomeComponent() {
+  const fetcher = useFetcher();
+  return (
+    <fetcher.Form method="post" action="/some/route">
+      <input type="text" />
+    </fetcher.Form>
+  );
+}
+```
+
+### `fetcher.load()`
+
+route loader를 통한 데이터 로딩, ex. `fetcher.load("/some/route");`
+
+예시와 같이 **URL**이 다수의 경로가 중첩되어 모두 일치할 수도 있겠지만(예를 들어, `/some`, `/some/route` 두 경로 모두 일치하는 것처럼) `fetcher.load()`는 오직 leaf와 일치하는(예시의 경우 `/some`을 제외하고 `/some/route`만) `loader`만 호출할 것이다. (or parent of index routes).
+
+클릭 핸들러에서 `fetcher.load()`를 사용하는 경우 `fetcher.Form`를 대신 사용하여 코드를 조금 더 간단하게 만들 수도 있다.
+
+> ✋ **주의**
+> 페이지 내에 존재하는 모든 실행 가능한 `fetcher.load()`는 revalidation의 일부로, 즉 해당 fetcher와 관련된 revalidation이 실행되면 `fetcher.load()`도 재실행된다. (**navigation submission**, **fetcher submission**, 또는 `useRevalidator()` 호출 후)
+
+### `fetcher.submit()`
+
+`<fetcher.Form>`의 명령형 버전, 사용자와의 상호 작용을 통해 패칭을 실행시키고 싶다면 `<fetcher.Form>`을 사용하면 되지만 사용자가 버튼을 클릭하는 것과 같은 상호 작용을 통해 패칭을 시작하고 싶지 않고 프로그래머가 원하는 시점에 패칭을 시작하고 싶다면 `fetcher.submit()`을 사용하면 된다.
+
+### `fetcher.data`
+
+loader나 action에서 반환된 데이터가 저장되는 장소, 데이터가 한번 저장되고 나면 reload 되거나 resubmission 될지라도 데이터를 가지고 있다.
+
+### `fetcher.formData`
+
+`<fetcher.Form>` 또는 `fetcher.submit()`를 사용하고 있는 경우에 낙관적 UI를 빌드할 수 있게 도와주는, 즉 `formData`가 담겨있는 속성이다.
+
+네트워크 요청이 발생하고 이에 대한 응답이 돌아오기 전까지 `fetcher.formData`를 사용할 수 있다. 이 말인 즉슨 요청에 대한 응답이 도착하는 순간 `fetcher.formData`는 더 이상 사용할 수 없으며 `revalidation`을 이루어진 응답 데이터를 활용해서 UI를 업데이트 해야 한다.
+
+### `fetcher.formAction` & `fetcher.formMethod`
+
+```jsx
+<fetcher.Form action="/mark-as-read" method="post" />;
+
+// when the form is submitting
+fetcher.formAction; // "mark-as-read"
+
+// when the form is submitting
+fetcher.formMethod; // "post"
+```
+
+### Index Query Param
+
+```jsx
+createBrowserRouter([
+  {
+    path: '/projects',
+    element: <ProjectsLayout />,
+    action: ProjectsLayout.action,
+    children: [
+      {
+        index: true,
+        element: <ProjectsIndex />,
+        action: ProjectsPage.action,
+      },
+    ],
+  },
+]);
+
+<Form method="post" action="/projects" />;
+<Form method="post" action="/projects?index" />;
+```
+
+위와 같이 경로는 같지만 중첩된 자식 `Route`를 구별하고 싶다면 `?index`를 **Query String Parameter**로 사용하면 된다.
